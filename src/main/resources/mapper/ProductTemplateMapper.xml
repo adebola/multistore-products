@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="io.factorialsystems.msscstore21products.repository.ProductTemplateRepository">
+    <resultMap id="productResultMap" type="io.factorialsystems.msscstore21products.model.ProductTemplate">
+        <id column="id" property="id" jdbcType="VARCHAR" />
+        <result column="name" property="name" jdbcType="VARCHAR"/>
+        <result column="brand" property="brand" jdbcType="VARCHAR"/>
+        <result column="description" property="description" jdbcType="VARCHAR"/>
+        <result column="created_by" property="createdBy" jdbcType="VARCHAR"/>
+        <result column="created_on" property="createdOn" jdbcType="TIMESTAMP"/>
+        <result column="image_url" property="imageUrl" jdbcType="VARCHAR"/>
+        <result column="category_id" property="categoryId" jdbcType="INTEGER"/>
+        <result column="category_name" property="categoryName" jdbcType="VARCHAR"/>
+        <result column="suspended" property="suspended" jdbcType="BOOLEAN"/>
+        <result column="deleted" property="deleted" jdbcType="BOOLEAN"/>
+        <result column="deleted_by" property="deletedBy" jdbcType="VARCHAR"/>
+        <result column="deleted_on" property="deletedOn" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <sql id="column_list">
+        pt.id,
+        pt.name,
+        pt.brand,
+        pt.created_on,
+        pt.created_by,
+        pt.image_url,
+        pt.category_id,
+        pt.description,
+        c.name as category_name,
+        pt.suspended,
+        pt.deleted,
+        pt.deleted_by,
+        pt.deleted_on
+    </sql>
+
+    <select id="search" parameterType="java.lang.String" resultMap="productResultMap">
+        select
+        <include refid="column_list"/>
+        from product_template pt, category c
+        where pt.name like CONCAT(#{search}, '%') or pt.brand like CONCAT(#{search}, '%')
+        and pt.category_id = c.id
+        and pt.deleted = FALSE
+    </select>
+
+    <select id="findAll" parameterType="java.lang.String" resultMap="productResultMap">
+        select
+        <include refid="column_list"/>
+        from product_template pt, category c
+        where pt.category_id = c.id
+    </select>
+
+    <select id="findById" parameterType="java.lang.String" resultMap="productResultMap">
+        select
+        <include refid="column_list"/>
+        from product_template pt, category c
+        where pt.category_id = c.id
+        and pt.id = #{id}
+    </select>
+
+    <insert id="save" parameterType="io.factorialsystems.msscstore21products.model.ProductTemplate">
+        insert into product_template(id, name, brand, description, image_url, category_id, created_by)
+        values(#{id}, #{name}, #{brand}, #{description}, #{imageUrl}, #{categoryId}, #{createdBy})
+    </insert>
+
+    <update id="update" parameterType="io.factorialsystems.msscstore21products.model.ProductTemplate">
+        update product_template
+        <set>
+            <if test="name != null">name=#{name},</if>
+            <if test="brand != null">brand=#{brand},</if>
+            <if test="imageUrl != null">image_url=#{imageUrl},</if>
+            <if test="description != null">description=#{description},</if>
+            <if test="categoryId != null">category_id=#{categoryId},</if>
+        </set>
+        where id = #{id}
+    </update>
+
+    <update id="suspend" parameterType="java.lang.String">
+        update product_template set suspended = true
+        where id = #{id}
+    </update>
+
+    <update id="unsuspend" parameterType="java.lang.String">
+        update product_template set suspended = false
+        where id = #{id}
+    </update>
+
+    <update id="delete" parameterType="java.util.Map">
+        update product_template set deleted = true, deleted_by = #{deletedBy}, deleted_on = NOW()
+        where id = #{id}
+    </update>
+</mapper>

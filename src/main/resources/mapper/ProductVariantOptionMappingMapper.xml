@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="io.factorialsystems.msscstore21products.repository.ProductVariantOptionMappingRepository">
+    <resultMap id="mappingResultMap" type="io.factorialsystems.msscstore21products.model.ProductVariantOptionMapping">
+        <result column="product_id" property="productId" jdbcType="VARCHAR"/>
+        <result column="product_variant_id" property="productVariantId" jdbcType="VARCHAR"/>
+        <result column="product_variant_option_id" property="productVariantOptionId" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <sql id="column_list">
+        product_id,
+        product_variant_id,
+        product_variant_option_id
+    </sql>
+
+    <select id="findByProductId" parameterType="java.lang.String" resultMap="mappingResultMap">
+        select
+        <include refid="column_list"/>
+        from product_variant_option_mapping
+        where product_id = #{id}
+    </select>
+
+    <select id="findByVariantId" parameterType="java.lang.String" resultMap="mappingResultMap">
+        select
+        <include refid="column_list"/>
+        from product_variant_option_mapping
+        where product_variant_id = #{id}
+    </select>
+
+    <insert id="save" parameterType="io.factorialsystems.msscstore21products.model.ProductVariantOptionMapping">
+        insert into product_variant_option_mapping(product_id, product_variant_id, product_variant_option_id)
+        values(#{productId}, #{productVariantId}, #{productVariantOptionId})
+    </insert>
+
+    <delete id="deleteVariant" parameterType="io.factorialsystems.msscstore21products.model.ProductVariantOptionMapping">
+        delete from product_variant_option_mapping
+        where product_id = #{productId}
+        and product_variant_id = #{productVariantId}
+    </delete>
+
+    <delete id="deleteVariantOption" parameterType="io.factorialsystems.msscstore21products.model.ProductVariantOptionMapping">
+        delete from product_variant_option_mapping
+        where product_id = #{productId}
+        and product_variant_id = #{productVariantId}
+        and product_variant_option_id = #{productVariantOptionId}
+    </delete>
+</mapper>

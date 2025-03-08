@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="io.factorialsystems.msscstore21products.repository.ProductRepository">
+    <resultMap id="productResultMap" type="io.factorialsystems.msscstore21products.model.Product">
+        <id column="id" property="id" jdbcType="VARCHAR" />
+        <result column="template_id" property="templateId" jdbcType="VARCHAR"/>
+        <result column="name" property="productName" jdbcType="VARCHAR"/>
+        <result column="image_url" property="imageUrl" jdbcType="VARCHAR"/>
+        <result column="uom_id" property="uomId" jdbcType="VARCHAR"/>
+        <result column="uom_name" property="uomName" jdbcType="VARCHAR"/>
+        <result column="sku_code" property="sku" jdbcType="VARCHAR"/>
+        <result column="price" property="price" jdbcType="DECIMAL"/>
+        <result column="discount" property="discount" jdbcType="DECIMAL"/>
+        <result column="product_image_url" property="productImageUrl" jdbcType="VARCHAR"/>
+        <result column="new" property="isNew" jdbcType="BOOLEAN"/>
+        <result column="sale" property="sale" jdbcType="BOOLEAN"/>
+        <result column="quantity" property="quantity" jdbcType="INTEGER"/>
+        <result column="extra_description" property="extraDescription"/>
+        <result column="variant_id" property="variantId" jdbcType="VARCHAR"/>
+        <result column="variant_name" property="variantName" jdbcType="VARCHAR"/>
+        <result column="variant_option_id" property="variantOptionId" jdbcType="VARCHAR"/>
+        <result column="variant_option_name" property="variantOptionName" jdbcType="VARCHAR"/>
+        <result column="suspended" property="suspended" jdbcType="BOOLEAN"/>
+        <result column="deleted" property="deleted" jdbcType="BOOLEAN"/>
+        <result column="deleted_by" property="deletedBy" jdbcType="VARCHAR"/>
+        <result column="deleted_on" property="deletedOn" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <sql id="column_list">
+        pt.id as template_id,
+        pt.name,
+        pt.image_url,
+        p.id,
+        p.sku_code,
+        p.price,
+        p.discount,
+        p.suspended,
+        p.deleted,
+        p.deleted_by,
+        p.deleted_on,
+        p.image_url as product_image_url,
+        p.new,
+        p.sale,
+        p.quantity,
+        p.extra_description,
+        u.id as uom_id,
+        u.name as uom_name,
+        pv.id as variant_id,
+        pv.name as variant_name,
+        pvo.id as variant_option_id,
+        pvo.name as variant_option_name
+    </sql>
+
+    <select id="findById" parameterType="java.lang.String" resultMap="productResultMap">
+        select
+        <include refid="column_list"/>
+        from product_template pt
+        inner join product p on pt.id = p.product_template_id
+        inner join uom u on p.uom_id = u.id
+        inner join product_variant_option_mapping pvoc on p.id = pvoc.product_id
+        inner join product_variant pv on pvoc.product_variant_id = pv.id
+        inner join product_variant_option pvo on pvoc.product_variant_option_id = pvo.id
+        where p.id = #{id}
+    </select>
+
+    <select id="findAll" resultMap="productResultMap">
+        select
+        <include refid="column_list"/>
+        from product_template pt
+        inner join product p on pt.id = p.product_template_id
+        inner join uom u on p.uom_id = u.id
+        inner join product_variant_option_mapping pvoc on p.id = pvoc.product_id
+        inner join product_variant pv on pvoc.product_variant_id = pv.id
+        inner join product_variant_option pvo on pvoc.product_variant_option_id = pvo.id
+    </select>
+
+    <select id="search" parameterType="java.lang.String" resultMap="productResultMap">
+        select
+        <include refid="column_list"/>
+        from product_template pt
+        inner join product p on pt.id = p.product_template_id
+        inner join uom u on p.uom_id = u.id
+        inner join product_variant_option_mapping pvoc on p.id = pvoc.product_id
+        inner join product_variant pv on pvoc.product_variant_id = pv.id
+        inner join product_variant_option pvo on pvoc.product_variant_option_id = pvo.id
+        where pt.name like CONCAT(#{search}, '%') or pt.brand like CONCAT(#{search}, '%') or pvo.name like CONCAT(#{search}, '%')
+    </select>
+    <select id="findBySkuCode" parameterType="java.lang.String" resultMap="productResultMap">
+        select
+        <include refid="column_list"/>
+        from product_template pt
+        inner join product p on pt.id = p.product_template_id
+        inner join uom u on p.uom_id = u.id
+        inner join product_variant_option_mapping pvoc on p.id = pvoc.product_id
+        inner join product_variant pv on pvoc.product_variant_id = pv.id
+        inner join product_variant_option pvo on pvoc.product_variant_option_id = pvo.id
+        where p.sku_code = #{code}
+    </select>
+
+    <select id="checkIfExistsBySku" parameterType="java.lang.String" resultType="java.lang.Boolean">
+        select exists(select 1 from product where sku_code = #{sku})
+    </select>
+
+    <select id="checkIfProductExists" parameterType="java.util.Map" resultType="java.lang.Boolean">
+        select exists(
+            select 1 from product_template pt, product p, product_variant_option_mapping pvom
+            where pt.id = #{templateId}
+            and p.product_template_id = pt.id
+            and p.id = pvom.product_id
+            and pvom.product_variant_id = #{variantId}
+            and pvom.product_variant_option_id = #{variantOptionId}
+        );
+    </select>
+
+    <insert id="create" parameterType="io.factorialsystems.msscstore21products.model.Product">
+        insert into product(id, sku_code, product_template_id, uom_id, price, discount, image_url, extra_description, new, sale, quantity, created_by)
+        values (#{id}, #{sku}, #{templateId}, #{uomId}, #{price}, #{discount}, #{imageUrl}, #{extraDescription}, #{isNew}, #{sale}, #{quantity}, #{createdBy})
+    </insert>
+</mapper>
