@@ -7,6 +7,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.Instant;
+
 @Getter
 @Setter
 @NoArgsConstructor
@@ -18,4 +20,10 @@ public class CategoryClientDto {
     @NotEmpty(message = "Category name must be specified")
     private String name;
     private String imageUrl;
+    private Boolean disabled;
+    private String createdBy;
+    private Instant createdOn;
+
+    @NotEmpty
+    private String description;
 }

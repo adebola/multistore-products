@@ -10,10 +10,8 @@ import java.util.Map;
 public interface CategoryRepository {
     void save(Category category);
     void update (Category category);
+    Category findByIdAndTenantId(Map<String, String> params);
+    Page<Category> findAllForTenant(String id);
+    Page<Category> searchForTenant(Map<String, String> params);
     Category findById(String id);
-    Page<Category> findAll();
-    Page<Category> search(String search);
-    void suspend(String id);
-    void unsuspend(String id);
-    void delete (Map<String, String> parameters);
 }

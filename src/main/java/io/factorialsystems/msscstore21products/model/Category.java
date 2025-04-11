@@ -3,36 +3,34 @@ package io.factorialsystems.msscstore21products.model;
 
 import io.factorialsystems.msscstore21products.dto.CategoryClientDto;
 import io.factorialsystems.msscstore21products.security.JwtTokenWrapper;
-import lombok.AccessLevel;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-import java.util.Date;
+import java.time.Instant;
 import java.util.UUID;
 
 
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Getter
+@Setter
 public class Category {
-    @Getter
     private String id;
-
-    @Getter
     private String name;
-
     private String imageUrl;
-    private Date createdOn;
     private String createdBy;
-    private Boolean deleted;
-    private String deletedBy;
-    private Date deletedOn;
-    private Boolean suspended;
+    private Instant createdOn;
+    private String description;
+    private Boolean disabled;
+    private String tenantId;
 
-    static public Category createCategory(String name, String imageUrl) {
+    static public Category createCategory(String name, String imageUrl, String description) {
         Category c = new Category();
         c.id = UUID.randomUUID().toString();
         c.name = name;
         c.imageUrl = imageUrl;
+        c.description = description;
         c.createdBy = JwtTokenWrapper.getUserName();
+        c.tenantId = JwtTokenWrapper.getTenantId();
+        c.disabled = false;
         return c;
     }
 
@@ -46,6 +44,14 @@ public class Category {
     }
 
     public CategoryClientDto createClientDto() {
-        return new CategoryClientDto(id, name, imageUrl);
+        CategoryClientDto dto = new CategoryClientDto();
+        dto.setId(id);
+        dto.setName(name);
+        dto.setImageUrl(imageUrl);
+        dto.setDescription(description);
+        dto.setCreatedBy(createdBy);
+        dto.setCreatedOn(createdOn);
+        dto.setDisabled(disabled);
+        return dto;
     }
 }

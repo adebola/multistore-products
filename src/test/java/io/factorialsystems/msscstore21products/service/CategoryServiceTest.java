@@ -7,6 +7,8 @@ import lombok.extern.apachecommons.CommonsLog;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.annotation.Rollback;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Optional;
@@ -21,14 +23,16 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 class CategoryServiceTest {
 
     @Autowired
-    private CategoryService categoryService;
+    private CategoryServiceImpl categoryService;
 
     @Test
+    @Transactional
+    @Rollback
     void clientSave() {
         CategoryClientDto dto = new CategoryClientDto();
         dto.setName("Shirts");
         dto.setImageUrl("http://www.nag.co.uk");
-        categoryService.clientSave(dto);
+        categoryService.clientSave(dto, null);
 
         log.info(categoryService.findAll(1, 20));
     }
@@ -46,7 +50,7 @@ class CategoryServiceTest {
         CategoryClientDto dto = optional.get();
 
         dto.setName(generatedString);
-        categoryService.clientUpdate(id, dto);
+        categoryService.clientUpdate(id, dto, null);
 
         assertEquals(categoryService.findById(id).get().getName(), generatedString);
     }

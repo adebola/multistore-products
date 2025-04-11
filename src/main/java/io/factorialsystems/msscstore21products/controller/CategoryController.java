@@ -17,14 +17,16 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Optional;
 
 @RestController
 @RequiredArgsConstructor
 @SecurityRequirement(name = "bearerToken")
-@RequestMapping("/api/v1/product/category")
+@RequestMapping("/api/v1/category")
 public class CategoryController {
     private final CategoryService categoryService;
 
@@ -35,8 +37,8 @@ public class CategoryController {
             @ApiResponse(responseCode = "400", description = "Error", content = {@Content(mediaType = "application/json", schema = @Schema(implementation = MessageDto.class))})
     })
     @Operation(summary = "Get All Categories", description = "Get a Pageful of Categories, default values PageNumber =1, PageSize = 20")
-    public PagedDto<CategoryClientDto> findAll(@RequestParam(value = "pageNumber", required = false) Integer pageNumber,
-                                               @RequestParam(value = "pageSize", required = false) Integer pageSize) {
+    public PagedDto<CategoryClientDto> findAllForTenant(@RequestParam(value = "pageNumber", required = false) Integer pageNumber,
+                                                        @RequestParam(value = "pageSize", required = false) Integer pageSize) {
 
         if (pageNumber == null || pageNumber < 0) {
             pageNumber = Constants.DEFAULT_PAGE_NUMBER;
@@ -55,7 +57,7 @@ public class CategoryController {
             @ApiResponse(responseCode = "400", description = "Error", content = {@Content(mediaType = "application/json", schema = @Schema(implementation = MessageDto.class))})
     })
     @Operation(summary = "Get Single Category", description = "Get Single Category By Id")
-    public ResponseEntity<?> findById(@PathVariable("id") String id) {
+    public ResponseEntity<?> findByIdAndTenant(@PathVariable("id") String id) {
         Optional<CategoryClientDto> categoryClientDto = categoryService.findById(id);
 
         if (categoryClientDto.isEmpty()) {
@@ -72,9 +74,12 @@ public class CategoryController {
             @ApiResponse(responseCode = "201", description = "Created", content = {@Content(mediaType = "application/json")}),
             @ApiResponse(responseCode = "400", description = "Error", content = {@Content(mediaType = "application/json", schema = @Schema(implementation = MessageDto.class))})
     })
-    @Operation(summary = "Create category", description = "Create Category")
-    public void create(@Valid @RequestBody CategoryClientDto dto) {
-        categoryService.clientSave(dto);
+    @Operation(summary = "Create category", description = "Create category")
+    @PreAuthorize("hasAnyRole('STORE_ADMIN', 'STORE_PRODUCT_ADMIN')")
+    public void create(@Valid @RequestPart("category") CategoryClientDto dto,
+                       @RequestPart(value = "file", required = false) MultipartFile file) {
+
+        categoryService.clientSave(dto, file);
     }
 
     @PutMapping("/{id}")
@@ -84,51 +89,35 @@ public class CategoryController {
             @ApiResponse(responseCode = "400", description = "Error", content = {@Content(mediaType = "application/json", schema = @Schema(implementation = MessageDto.class))})
     })
     @Operation(summary = "Update category", description = "Update Category")
-    public void update(@PathVariable("id") String id, @Valid @RequestBody CategoryClientDto dto) {
-        categoryService.clientUpdate(id, dto);
+    @PreAuthorize("hasAnyRole('STORE_ADMIN', 'STORE_PRODUCT_ADMIN')")
+    public void update(@PathVariable("id") String id,
+                       @Valid @RequestPart("category") CategoryClientDto dto,
+                       @RequestPart(value = "file", required = false) MultipartFile file) {
+        categoryService.clientUpdate(id, dto, file);
     }
 
-    @PutMapping("/suspend/{id}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @PutMapping("/{id}/upload")
+    @ResponseStatus(HttpStatus.ACCEPTED)
     @ApiResponses({
-            @ApiResponse(responseCode = "204", description = "No Content", content = {@Content(mediaType = "application/json")}),
+            @ApiResponse(responseCode = "202", description = "Accepted", content = {@Content(mediaType = "application/json")}),
             @ApiResponse(responseCode = "400", description = "Error", content = {@Content(mediaType = "application/json", schema = @Schema(implementation = MessageDto.class))})
     })
-    @Operation(summary = "Suspend category", description = "Suspend Category")
-    public void suspend(@PathVariable("id") String id) {
-        categoryService.clientSuspend(id);
+    @Operation(summary = "Change Category Image", description = "Change Category Image")
+    @PreAuthorize("hasAnyRole('STORE_ADMIN', 'STORE_PRODUCT_ADMIN')")
+    public void uploadImage(@PathVariable("id") String id,
+                            @RequestParam("file") MultipartFile file
+    )  {
+        categoryService.changeImage(id, file);
     }
 
-    @PutMapping("/unsuspend/{id}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    @ApiResponses({
-            @ApiResponse(responseCode = "204", description = "No Content", content = {@Content(mediaType = "application/json")}),
-            @ApiResponse(responseCode = "400", description = "Error", content = {@Content(mediaType = "application/json", schema = @Schema(implementation = MessageDto.class))})
-    })
-    @Operation(summary = "Un-Suspend category", description = "Un-Suspend Category")
-    public void unsuspend(@PathVariable("id") String id) {
-        categoryService.clientUnsuspend(id);
-    }
-
-    @DeleteMapping("/{id}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    @ApiResponses({
-            @ApiResponse(responseCode = "204", description = "No Content", content = {@Content(mediaType = "application/json")}),
-            @ApiResponse(responseCode = "400", description = "Error", content = {@Content(mediaType = "application/json", schema = @Schema(implementation = MessageDto.class))})
-    })
-    @Operation(summary = "Delete category", description = "Delete Category")
-    public void delete(@PathVariable("id") String id) {
-        categoryService.clientDelete(id);
-    }
-
-    @GetMapping("/search/{search}")
+    @GetMapping("/search")
     @ResponseStatus(HttpStatus.OK)
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "OK", content = {@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = CategoryClientDto.class)))}),
             @ApiResponse(responseCode = "400", description = "Error", content = {@Content(mediaType = "application/json", schema = @Schema(implementation = MessageDto.class))})
     })
     @Operation(summary = "Search Category", description = "Search Category by Name")
-    public PagedDto<CategoryClientDto> search(@PathVariable("search") String search,
+    public PagedDto<CategoryClientDto> search(@RequestParam(value = "search") String search,
                                               @RequestParam(value = "pageNumber", required = false) Integer pageNumber,
                                               @RequestParam(value = "pageSize", required = false) Integer pageSize) {
 

@@ -8,20 +8,19 @@
         <result column="created_by" property="createdBy" jdbcType="VARCHAR"/>
         <result column="created_on" property="createdOn" jdbcType="TIMESTAMP"/>
         <result column="image_url" property="imageUrl" jdbcType="VARCHAR"/>
-        <result column="suspended" property="suspended" jdbcType="BOOLEAN"/>
-        <result column="deleted" property="deleted" jdbcType="BOOLEAN"/>
-        <result column="deleted_by" property="deletedBy" jdbcType="VARCHAR"/>
-        <result column="deleted_on" property="deletedOn" jdbcType="TIMESTAMP"/>
+        <result column="disabled" property="disabled" jdbcType="BOOLEAN"/>
+        <result column="description" property="description" jdbcType="VARCHAR"/>
+        <result column="tenant_id" property="tenantId" jdbcType="VARCHAR"/>
     </resultMap>
 
     <sql id="column_list">
-        id, name, created_on, created_by, image_url, suspended, deleted, deleted_by, deleted_on
+        id, name, created_on, created_by, image_url, created_on, created_by, disabled, tenant_id,description
     </sql>
 
-    <select id="findAll" resultMap="categoryResultMap">
+    <select id="findAllForTenant" resultMap="categoryResultMap" parameterType="java.lang.String">
         select
         <include refid="column_list"/>
-        from category
+        from category where tenant_id = #{id}
     </select>
 
     <select id="findById" parameterType="java.lang.String" resultMap="categoryResultMap">
@@ -31,9 +30,16 @@
         where id = #{id}
     </select>
 
+    <select id="findByIdAndTenantId" parameterType="java.util.Map" resultMap="categoryResultMap">
+        select
+        <include refid="column_list"/>
+        from category
+        where id = #{id} and tenant_id = #{tenantId}
+    </select>
+
     <insert id="save" parameterType="io.factorialsystems.msscstore21products.model.Category">
-        insert into category(id, name, image_url, created_by)
-        values(#{id}, #{name}, #{imageUrl}, #{createdBy})
+        insert into category(id, name, image_url, created_by, tenant_id, description)
+        values(#{id}, #{name}, #{imageUrl}, #{createdBy}, #{tenantId}, #{description})
     </insert>
 
     <update id="update" parameterType="io.factorialsystems.msscstore21products.model.Category">
@@ -41,29 +47,16 @@
         <set>
             <if test="name != null">name=#{name},</if>
             <if test="imageUrl != null">image_url=#{imageUrl},</if>
+            <if test="disabled != null">disabled=#{disabled},</if>
+            <if test="description != null">description=#{description},</if>
         </set>
         where id = #{id}
     </update>
 
-    <update id="suspend" parameterType="java.util.Map">
-        update category set suspended = true
-        where id = #{id}
-    </update>
-
-    <update id="unsuspend" parameterType="java.lang.String">
-        update category set suspended = false
-        where id = #{id}
-    </update>
-
-    <update id="delete" parameterType="java.util.Map">
-        update category set deleted = true, deleted_by = #{deletedBy}, deleted_on = NOW()
-        where id = #{id}
-    </update>
-
-    <select id="search" parameterType="java.lang.String" resultMap="categoryResultMap">
+    <select id="searchForTenant" parameterType="java.util.Map" resultMap="categoryResultMap">
         select
         <include refid="column_list"/>
         from category
-        where name like CONCAT(#{search}, '%')
+        where tenant_id = #{tenantId} and name like CONCAT(#{search}, '%')
     </select>
 </mapper>

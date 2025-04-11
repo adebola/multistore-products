@@ -1,6 +1,11 @@
 server:
   port: 8082
 
+logging:
+  level:
+    org.springframework.security: DEBUG
+    org.springframework.web: DEBUG
+
 spring:
   application:
     name: store-product
@@ -41,10 +46,16 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: http://localhost:9000
+          issuer-uri: http://localhost:9000/auth
   threads:
     virtual:
       enabled: true
+
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: user
+    password: password
 
 mybatis:
   mapper-locations: classpath:mapper/*.xml
@@ -55,3 +66,19 @@ pagehelper:
   reasonable: true
   support-methods-arguments: true
   params: count=countSql
+
+rabbitmq:
+  queue:
+    audit:
+      name: audit-queue
+  exchange:
+    name: topic-exchange
+  routing:
+    audit:
+      key: audit-routing
+aws:
+  s3:
+    bucket: iceplanet-stores
+    region: eu-west-2
+    accessKeyId: your-access-key
+    secretAccessKey: your-secret-key
