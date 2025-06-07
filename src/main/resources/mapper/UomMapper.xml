@@ -7,20 +7,18 @@
         <result column="name" property="name" jdbcType="VARCHAR"/>
         <result column="created_by" property="createdBy" jdbcType="VARCHAR"/>
         <result column="created_on" property="createdOn" jdbcType="TIMESTAMP"/>
-        <result column="suspended" property="suspended" jdbcType="BOOLEAN"/>
-        <result column="deleted" property="deleted" jdbcType="BOOLEAN"/>
-        <result column="deleted_by" property="deletedBy" jdbcType="VARCHAR"/>
-        <result column="deleted_on" property="deletedOn" jdbcType="TIMESTAMP"/>
+        <result column="disabled" property="disabled" jdbcType="BOOLEAN"/>
+        <result column="tenant_id" property="tenantId" jdbcType="VARCHAR"/>
     </resultMap>
 
     <sql id="column_list">
-        id, name, created_on, created_by, suspended, deleted, deleted_by, deleted_on
+        id, name, created_on, created_by, disabled, tenant_id
     </sql>
 
-    <select id="findAll" parameterType="java.lang.String" resultMap="uoMResultMap">
+    <select id="findAllForTenant" parameterType="java.lang.String" resultMap="uoMResultMap">
         select
         <include refid="column_list"/>
-        from uom
+        from uom where tenant_id = #{id}
     </select>
 
     <select id="findById" parameterType="java.lang.String" resultMap="uoMResultMap">
@@ -30,39 +28,32 @@
         where id = #{id}
     </select>
 
-    <select id="search" parameterType="java.lang.String" resultMap="uoMResultMap">
+    <select id="findByIdAndTenantId" parameterType="java.util.Map" resultMap="uoMResultMap">
         select
         <include refid="column_list"/>
         from uom
-        where name like CONCAT(#{search}, '%')
+        where id = #{id} and tenant_id = #{tenantId}
     </select>
 
+    <select id="search" parameterType="java.util.Map" resultMap="uoMResultMap">
+        select
+        <include refid="column_list"/>
+        from uom
+        where tenant_id = #{id} and name like CONCAT(#{search}, '%')
+    </select>
 
     <insert id="save" parameterType="io.factorialsystems.msscstore21products.model.Uom">
-        insert into uom(id, name, created_by)
-        values(#{id}, #{name}, #{createdBy})
+        insert into uom(id, name, created_by, tenant_id)
+        values(#{id}, #{name}, #{createdBy}, #{tenantId})
     </insert>
 
     <update id="update" parameterType="io.factorialsystems.msscstore21products.model.Uom">
         update uom
         <set>
             <if test="name != null">name=#{name},</if>
+            <if test="disabled != null">disabled=#{disabled},</if>
         </set>
         where id = #{id}
     </update>
 
-    <update id="suspend" parameterType="java.lang.String">
-        update uom set suspended = true
-        where id = #{id}
-    </update>
-
-    <update id="unsuspend" parameterType="java.lang.String">
-        update uom set suspended = false
-        where id = #{id}
-    </update>
-
-    <update id="delete" parameterType="java.util.Map">
-        update uom set deleted = true, deleted_by = #{deletedBy}, deleted_on = NOW()
-        where id = #{id}
-    </update>
 </mapper>

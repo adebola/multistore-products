@@ -1,5 +1,6 @@
 package io.factorialsystems.msscstore21products.config;
 
+import io.factorialsystems.msscstore21products.security.TenantIdCaptureFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;
@@ -9,6 +10,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 @EnableMethodSecurity
@@ -20,6 +22,7 @@ public class SecurityConfig {
         return http
                 .csrf(Customizer.withDefaults())
                 .cors(Customizer.withDefaults())
+                .addFilterBefore(new TenantIdCaptureFilter(), UsernamePasswordAuthenticationFilter.class)
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/actuator/**").permitAll()
                         .requestMatchers("/swagger-ui/**").permitAll()

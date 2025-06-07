@@ -16,8 +16,5 @@ public class ProductVariantOption {
     private String name;
     private Date createdOn;
     private String createdBy;
-    private Boolean suspended;
-    private Boolean deleted;
-    private String deletedBy;
-    private Date deletedOn;
+    private Boolean disabled;
 }

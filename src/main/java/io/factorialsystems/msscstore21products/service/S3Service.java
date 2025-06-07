@@ -41,38 +41,38 @@ public class S3Service {
 
     public String uploadFile(MultipartFile file) {
         AwsBasicCredentials awsCreds = AwsBasicCredentials.create(accessKeyId, secretAccessKey);
-        S3Client s3Client = S3Client.builder()
+
+        try (S3Client s3Client = S3Client.builder()
                 .region(Region.of(region))
                 .credentialsProvider(StaticCredentialsProvider.create(awsCreds))
-                .build();
+                .build()) {
 
-        final Random rand = new Random();
+            final Random rand = new Random();
 
-        final String fileName = String.format("%d-%s",
-                rand.nextInt(RAND_MAX - RAND_MIN + 1) + RAND_MIN,
-                Paths.get(Objects.requireNonNull(file.getOriginalFilename())).getFileName().toString()
-        );
+            final String fileName = String.format("%d-%s",
+                    rand.nextInt(RAND_MAX - RAND_MIN + 1) + RAND_MIN,
+                    Paths.get(Objects.requireNonNull(file.getOriginalFilename())).getFileName().toString()
+            );
 
-        try {
-            PutObjectRequest putObjectRequest = PutObjectRequest.builder()
-                    .bucket(bucketName)
-                    .key(fileName)
-                    .build();
+                PutObjectRequest putObjectRequest = PutObjectRequest.builder()
+                        .bucket(bucketName)
+                        .key(fileName)
+                        .build();
 
-            PutObjectResponse response = s3Client.putObject(putObjectRequest,  RequestBody.fromInputStream(file.getInputStream(), file.getSize()));
+                PutObjectResponse response = s3Client.putObject(putObjectRequest, RequestBody.fromInputStream(file.getInputStream(), file.getSize()));
 
-            GetUrlRequest getUrlRequest = GetUrlRequest.builder()
-                    .bucket(bucketName)
-                    .key(fileName)
-                    .build();
+                GetUrlRequest getUrlRequest = GetUrlRequest.builder()
+                        .bucket(bucketName)
+                        .key(fileName)
+                        .build();
 
-            final String fileUri =  s3Client.utilities().getUrl(getUrlRequest).toExternalForm();
-            log.info("File URI: {}", fileUri);
+                final String fileUri = s3Client.utilities().getUrl(getUrlRequest).toExternalForm();
+                log.info("File URI: {}", fileUri);
 
-            return fileUri;
-        } catch (IOException e) {
-            log.error("Error uploading file to S3", e);
-            throw new RuntimeException("Error uploading file to S3", e);
-        }
+                return fileUri;
+            } catch (IOException e) {
+                log.error("Error uploading file to S3", e);
+                throw new RuntimeException("Error uploading file to S3", e);
+            }
     }
 }

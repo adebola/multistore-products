@@ -4,117 +4,380 @@
 <mapper namespace="io.factorialsystems.msscstore21products.repository.ProductRepository">
     <resultMap id="productResultMap" type="io.factorialsystems.msscstore21products.model.Product">
         <id column="id" property="id" jdbcType="VARCHAR" />
-        <result column="template_id" property="templateId" jdbcType="VARCHAR"/>
-        <result column="name" property="productName" jdbcType="VARCHAR"/>
+        <result column="product_name" property="productName" jdbcType="VARCHAR"/>
+        <result column="category_id" property="categoryId" jdbcType="VARCHAR"/>
+        <result column="category_name" property="categoryName" jdbcType="VARCHAR"/>
         <result column="image_url" property="imageUrl" jdbcType="VARCHAR"/>
-        <result column="uom_id" property="uomId" jdbcType="VARCHAR"/>
-        <result column="uom_name" property="uomName" jdbcType="VARCHAR"/>
-        <result column="sku_code" property="sku" jdbcType="VARCHAR"/>
-        <result column="price" property="price" jdbcType="DECIMAL"/>
-        <result column="discount" property="discount" jdbcType="DECIMAL"/>
-        <result column="product_image_url" property="productImageUrl" jdbcType="VARCHAR"/>
-        <result column="new" property="isNew" jdbcType="BOOLEAN"/>
-        <result column="sale" property="sale" jdbcType="BOOLEAN"/>
-        <result column="quantity" property="quantity" jdbcType="INTEGER"/>
-        <result column="extra_description" property="extraDescription"/>
-        <result column="variant_id" property="variantId" jdbcType="VARCHAR"/>
-        <result column="variant_name" property="variantName" jdbcType="VARCHAR"/>
-        <result column="variant_option_id" property="variantOptionId" jdbcType="VARCHAR"/>
-        <result column="variant_option_name" property="variantOptionName" jdbcType="VARCHAR"/>
-        <result column="suspended" property="suspended" jdbcType="BOOLEAN"/>
-        <result column="deleted" property="deleted" jdbcType="BOOLEAN"/>
-        <result column="deleted_by" property="deletedBy" jdbcType="VARCHAR"/>
-        <result column="deleted_on" property="deletedOn" jdbcType="TIMESTAMP"/>
+        <result column="description" property="description" jdbcType="VARCHAR"/>
+        <result column="tenant_id" property="tenantId" jdbcType="VARCHAR"/>
+        <result column="disabled" property="disabled" jdbcType="BOOLEAN"/>
+        <result column="created_by" property="createdBy" jdbcType="VARCHAR"/>
+        <result column="created_on" property="createdOn" jdbcType="TIMESTAMP"/>
+        <collection property="uoms" ofType="io.factorialsystems.msscstore21products.model.Uom">
+            <id column="uom_id" property="id" jdbcType="VARCHAR" />
+            <result column="uom_name" property="name" jdbcType="VARCHAR"/>
+            <result column="uom_disabled" property="disabled" jdbcType="BOOLEAN"/>
+        </collection>
+        <collection property="variants" ofType="io.factorialsystems.msscstore21products.model.ProductVariant">
+            <id column="variant_id" property="id" jdbcType="VARCHAR" />
+            <result column="variant_name" property="name" jdbcType="VARCHAR"/>
+            <result column="variant_disabled" property="disabled" jdbcType="BOOLEAN"/>
+            <collection property="options" ofType="io.factorialsystems.msscstore21products.model.ProductVariantOption">
+                <id column="option_id" property="id" jdbcType="VARCHAR" />
+                <result column="option_name" property="name" jdbcType="VARCHAR"/>
+                <result column="option_disabled" property="disabled" jdbcType="BOOLEAN"/>
+            </collection>
+        </collection>
+    </resultMap>
+
+    <resultMap id="productResultMapFlat" type="io.factorialsystems.msscstore21products.model.Product">
+        <id column="id" property="id" jdbcType="VARCHAR" />
+        <result column="product_name" property="productName" jdbcType="VARCHAR"/>
+        <result column="category_id" property="categoryId" jdbcType="VARCHAR"/>
+        <result column="category_name" property="categoryName" jdbcType="VARCHAR"/>
+        <result column="image_url" property="imageUrl" jdbcType="VARCHAR"/>
+        <result column="description" property="description" jdbcType="VARCHAR"/>
+        <result column="tenant_id" property="tenantId" jdbcType="VARCHAR"/>
+        <result column="disabled" property="disabled" jdbcType="BOOLEAN"/>
+        <result column="created_by" property="createdBy" jdbcType="VARCHAR"/>
+        <result column="created_on" property="createdOn" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <resultMap id="uomResultMap" type="io.factorialsystems.msscstore21products.model.Uom">
+        <id column="id" property="id" jdbcType="VARCHAR" />
+        <result column="name" property="name" jdbcType="VARCHAR"/>
+        <result column="created_by" property="createdBy" jdbcType="VARCHAR"/>
+        <result column="created_on" property="createdOn" jdbcType="TIMESTAMP"/>
+        <result column="disabled" property="disabled" jdbcType="BOOLEAN"/>
+    </resultMap>
+
+    <resultMap id="variantResultMap" type="io.factorialsystems.msscstore21products.model.ProductVariant">
+        <id column="id" property="id" jdbcType="VARCHAR" />
+        <result column="name" property="name" jdbcType="VARCHAR"/>
+        <result column="product_id" property="productId" jdbcType="VARCHAR"/>
+        <result column="created_by" property="createdBy" jdbcType="VARCHAR"/>
+        <result column="created_on" property="createdOn" jdbcType="TIMESTAMP"/>
+        <result column="disabled" property="disabled" jdbcType="BOOLEAN"/>
+        <collection property="options" ofType="io.factorialsystems.msscstore21products.model.ProductVariantOption">
+            <id property="id" column="option_id"/>
+            <result property="name" column="option_name"/>
+        </collection>
     </resultMap>
 
     <sql id="column_list">
-        pt.id as template_id,
-        pt.name,
-        pt.image_url,
         p.id,
-        p.sku_code,
-        p.price,
-        p.discount,
-        p.suspended,
-        p.deleted,
-        p.deleted_by,
-        p.deleted_on,
-        p.image_url as product_image_url,
-        p.new,
-        p.sale,
-        p.quantity,
-        p.extra_description,
+        p.name as product_name,
+        p.category_id,
+        c.name as category_name,
+        p.image_url,
+        p.description,
+        p.disabled,
+        p.created_on,
+        p.created_by,
+        p.tenant_id,
         u.id as uom_id,
         u.name as uom_name,
+        u.disabled as uom_disabled,
         pv.id as variant_id,
         pv.name as variant_name,
-        pvo.id as variant_option_id,
-        pvo.name as variant_option_name
+        pv.disabled as variant_disabled,
+        pvo.id as option_id,
+        pvo.name as option_name,
+        pvo.disabled as option_disabled
     </sql>
 
+    <sql id="column_list_flat">
+        p.id,
+        p.name as product_name,
+        p.category_id,
+        c.name as category_name,
+        p.image_url,
+        p.description,
+        p.disabled,
+        p.created_on,
+        p.created_by,
+        p.tenant_id
+    </sql>
+
+
     <select id="findById" parameterType="java.lang.String" resultMap="productResultMap">
-        select
+        SELECT
         <include refid="column_list"/>
-        from product_template pt
-        inner join product p on pt.id = p.product_template_id
-        inner join uom u on p.uom_id = u.id
-        inner join product_variant_option_mapping pvoc on p.id = pvoc.product_id
-        inner join product_variant pv on pvoc.product_variant_id = pv.id
-        inner join product_variant_option pvo on pvoc.product_variant_option_id = pvo.id
-        where p.id = #{id}
+        FROM product p
+            INNER JOIN category c ON p.category_id = c.id
+            LEFT JOIN uom u ON p.id = u.product_id
+            LEFT JOIN product_variant pv ON p.id = pv.product_id
+            LEFT JOIN product_variant_option pvo ON pv.id = pvo.product_variant_id
+        WHERE p.id = #{id};
     </select>
 
-    <select id="findAll" resultMap="productResultMap">
-        select
-        <include refid="column_list"/>
-        from product_template pt
-        inner join product p on pt.id = p.product_template_id
-        inner join uom u on p.uom_id = u.id
-        inner join product_variant_option_mapping pvoc on p.id = pvoc.product_id
-        inner join product_variant pv on pvoc.product_variant_id = pv.id
-        inner join product_variant_option pvo on pvoc.product_variant_option_id = pvo.id
+    <select id="findSingleById" parameterType="java.lang.String" resultMap="productResultMapFlat">
+        SELECT
+        <include refid="column_list_flat"/>
+        FROM product p
+            INNER JOIN category c ON p.category_id = c.id
+        WHERE p.id = #{id}
+        ORDER BY p.name;
     </select>
 
-    <select id="search" parameterType="java.lang.String" resultMap="productResultMap">
-        select
-        <include refid="column_list"/>
-        from product_template pt
-        inner join product p on pt.id = p.product_template_id
-        inner join uom u on p.uom_id = u.id
-        inner join product_variant_option_mapping pvoc on p.id = pvoc.product_id
-        inner join product_variant pv on pvoc.product_variant_id = pv.id
-        inner join product_variant_option pvo on pvoc.product_variant_option_id = pvo.id
-        where pt.name like CONCAT(#{search}, '%') or pt.brand like CONCAT(#{search}, '%') or pvo.name like CONCAT(#{search}, '%')
-    </select>
-    <select id="findBySkuCode" parameterType="java.lang.String" resultMap="productResultMap">
-        select
-        <include refid="column_list"/>
-        from product_template pt
-        inner join product p on pt.id = p.product_template_id
-        inner join uom u on p.uom_id = u.id
-        inner join product_variant_option_mapping pvoc on p.id = pvoc.product_id
-        inner join product_variant pv on pvoc.product_variant_id = pv.id
-        inner join product_variant_option pvo on pvoc.product_variant_option_id = pvo.id
-        where p.sku_code = #{code}
+    <select id="findForTenant"  parameterType="java.lang.String" resultMap="productResultMapFlat">
+        SELECT
+        <include refid="column_list_flat"/>
+        FROM product p
+        INNER JOIN category c ON p.category_id = c.id
+        WHERE p.tenant_id = #{id}
+        ORDER BY p.name
     </select>
 
-    <select id="checkIfExistsBySku" parameterType="java.lang.String" resultType="java.lang.Boolean">
-        select exists(select 1 from product where sku_code = #{sku})
+    <select id="search" parameterType="java.util.Map" resultMap="productResultMapFlat">
+        select
+        <include refid="column_list_flat"/>
+        FROM product p
+        INNER JOIN category c ON p.category_id = c.id
+        WHERE p.tenant_id = #{tenantId}
+        AND (
+            p.name like CONCAT(#{search}, '%') or
+            c.name like CONCAT(#{search}, '%') or
+            p.brand like CONCAT(#{search}, '%')
+        )
+        ORDER BY p.name
     </select>
 
-    <select id="checkIfProductExists" parameterType="java.util.Map" resultType="java.lang.Boolean">
-        select exists(
-            select 1 from product_template pt, product p, product_variant_option_mapping pvom
-            where pt.id = #{templateId}
-            and p.product_template_id = pt.id
-            and p.id = pvom.product_id
-            and pvom.product_variant_id = #{variantId}
-            and pvom.product_variant_option_id = #{variantOptionId}
-        );
+
+    <select id="findByIdAndTenantId" parameterType="java.util.Map" resultMap="productResultMap">
+        SELECT
+        <include refid="column_list"/>
+        FROM product p
+            INNER JOIN category c ON p.category_id = c.id
+            LEFT JOIN uom u ON p.id = u.product_id
+            LEFT JOIN product_variant pv ON p.id = pv.product_id
+            LEFT JOIN product_variant_option pvo ON pv.id = pvo.product_variant_id
+        WHERE p.id = #{id}
+        AND p.tenant_id = #{tenantId};
     </select>
 
     <insert id="create" parameterType="io.factorialsystems.msscstore21products.model.Product">
-        insert into product(id, sku_code, product_template_id, uom_id, price, discount, image_url, extra_description, new, sale, quantity, created_by)
-        values (#{id}, #{sku}, #{templateId}, #{uomId}, #{price}, #{discount}, #{imageUrl}, #{extraDescription}, #{isNew}, #{sale}, #{quantity}, #{createdBy})
+        <!-- Insert main product -->
+        insert into product(id, name, category_id, image_url, description, created_by, tenant_id)
+        values (#{id}, #{productName}, #{categoryId}, #{imageUrl}, #{description}, #{createdBy}, #{tenantId});
+
+        <!-- Insert UOMs -->
+        <if test="uoms != null and uoms.size > 0">
+            INSERT INTO uom (product_id, name, created_by)
+            VALUES
+            <foreach collection="uoms" item="uom" separator=",">
+                (#{id}, #{uom.name}, #{uom.createdBy})
+            </foreach>;
+        </if>
+
+        <!-- Insert Product Variants -->
+        <if test="variants != null and variants.size > 0">
+            INSERT INTO product_variant (id, product_id, name, created_by)
+            VALUES
+            <foreach collection="variants" item="variant" separator=",">
+                (#{variant.id}, #{id}, #{variant.name}, #{variant.createdBy})
+            </foreach>;
+
+            <!-- Insert Product Variant Options -->
+            <foreach collection="variants" item="variant" separator=";">
+                <if test="variant.options != null and variant.options.size > 0">
+                    INSERT INTO product_variant_option (product_variant_id, id, name, created_by)
+                    VALUES
+                    <foreach collection="variant.options" item="option" separator=",">
+                        (#{variant.id}, #{option.id}, #{option.name}, #{option.createdBy})
+                    </foreach>
+                </if>
+            </foreach>
+        </if>
     </insert>
+
+    <insert id="addVariant" parameterType="java.util.Map">
+        insert into product_variant(id, product_id, name, created_by)
+        values (#{variant.id}, #{productId},  #{variant.name}, #{variant.createdBy});
+
+        <!-- Insert variant options if they exist -->
+        <if test="variant.options != null and variant.options.size > 0">
+            insert into product_variant_option(product_variant_id, id, name, created_by)
+            values
+            <foreach collection="variant.options" item="option" separator=",">
+                (#{variant.id}, #{option.id}, #{option.name}, #{option.createdBy})
+            </foreach>
+        </if>
+    </insert>
+
+    <insert id="addUom" parameterType="java.util.Map">
+        insert into uom(product_id, name, created_by)
+        values (#{productId}, #{uomName}, #{createdBy});
+    </insert>
+
+    <update id="removeUom" parameterType="java.util.Map">
+        update uom
+        set disabled = true
+        where product_id = #{productId} and id = #{id};
+    </update>
+
+    <update id="editUom" parameterType="java.util.Map">
+        update uom
+        set name = #{uomName}
+        where product_id = #{productId} and id = #{id};
+    </update>
+
+    <update id="updateProduct" parameterType="io.factorialsystems.msscstore21products.model.Product">
+        update product
+        <set>
+            <if test="productName != null">name = #{productName},</if>
+            <if test="categoryId != null">category_id = #{categoryId},</if>
+            <if test="imageUrl != null">image_url = #{imageUrl},</if>
+            <if test="description != null">description = #{description},</if>
+            <if test="disabled != null">disabled = #{disabled},</if>
+        </set>
+        where id = #{id} and tenant_id = #{tenantId}
+    </update>
+
+    <select id="findByNameAndTenantId" resultMap="productResultMapFlat" parameterType="java.util.Map">
+        SELECT
+        <include refid="column_list_flat"/>
+        FROM product p
+            INNER JOIN category c ON p.category_id = c.id
+        WHERE p.tenant_id = #{tenantId}
+        AND p.name = #{name}
+        ORDER BY p.name;
+    </select>
+
+    <select id="findProductUoms" resultMap="uomResultMap">
+        SELECT
+        u.id,
+        u.name,
+        u.created_by,
+        u.created_on,
+        u.disabled
+        FROM uom u
+        WHERE u.product_id = #{productId}
+    </select>
+
+    <select id ="findSingleProductUom" resultMap="uomResultMap">
+        SELECT
+        u.id,
+        u.name,
+        u.created_by,
+        u.created_on,
+        u.disabled
+        FROM uom u
+        WHERE u.product_id = #{productId} AND u.id = #{id}
+    </select>
+
+    <select id="findProductVariants" resultMap="variantResultMap" parameterType="java.util.Map">
+        SELECT pv.id,
+               pv.name,
+               pv.product_id,
+               pv.created_by,
+               pv.created_on,
+               pv.disabled,
+               pvo.id as option_id,
+               pvo.name as option_name
+        FROM product_variant pv
+        INNER JOIN product p ON pv.product_id = p.id
+        LEFT JOIN product_variant_option pvo ON pv.id = pvo.product_variant_id
+        WHERE pv.product_id = #{productId}
+        AND p.tenant_id = #{tenantId}
+    </select>
+
+    <select id="findSingleProductVariant" resultMap="variantResultMap" parameterType="java.util.Map">
+        SELECT pv.id,
+               pv.name,
+               pv.product_id,
+               pv.created_by,
+               pv.created_on,
+               pv.disabled,
+               pvo.id as option_id,
+               pvo.name as option_name
+        FROM product_variant pv
+        INNER JOIN product p ON pv.product_id = p.id
+        LEFT JOIN product_variant_option pvo ON pv.id = pvo.product_variant_id
+        WHERE pv.product_id = #{productId}
+        AND pv.id = #{id}
+        AND p.tenant_id = #{tenantId}
+    </select>
+
+    <update id="removeVariant">
+        update product_variant
+        set disabled = true
+        where product_id = #{productId} and id = #{id};
+    </update>
+
+    <update id="disableUom" parameterType="java.util.Map">
+        update uom
+        set disabled = true
+        where product_id = #{productId} and id = #{id};
+    </update>
+
+    <update id="enableUom" parameterType="java.util.Map">
+        update uom
+        set disabled = false
+        where product_id = #{productId} and id = #{id};
+    </update>
+
+    <update id="editVariant" parameterType="java.util.Map">
+        update product_variant
+        set name = #{variantName}
+        where product_id = #{productId} and id = #{id};
+    </update>
+
+    <update id="enableVariant" parameterType="java.util.Map">
+        update product_variant
+        set disabled = false
+        where product_id = #{productId} and id = #{id};
+    </update>
+
+    <update id="disableVariant" parameterType="java.util.Map">
+        update product_variant
+        set disabled = true
+        where product_id = #{productId} and id = #{id};
+    </update>
+
+    <select id="findVariantOptionByName" parameterType="java.util.Map"
+            resultType="io.factorialsystems.msscstore21products.model.ProductVariantOption">
+        SELECT pvo.id, pvo.name, pvo.created_by, pvo.created_on, pvo.disabled
+        FROM product_variant_option pvo, product p, product_variant pv
+        WHERE p.tenant_id = #{tenantId}
+        AND p.id = pv.product_id
+        AND pv.id = pvo.product_variant_id
+        AND pvo.product_variant_id = #{variantId}
+        AND pvo.name = #{name}
+    </select>
+
+    <insert id="addOptionToVariant" parameterType="java.util.Map">
+        INSERT INTO product_variant_option (product_variant_id, name, created_by)
+        VALUES (#{variantId}, #{name}, #{createdBy});
+    </insert>
+
+    <update id="updateVariantOption" parameterType="java.util.Map">
+        UPDATE product_variant_option
+        SET name = #{name}
+        WHERE product_variant_id = #{variantId} AND id = #{id};
+    </update>
+
+    <update id="enableVariantOption" parameterType="java.util.Map">
+        UPDATE product_variant_option
+        SET disabled = false
+        WHERE product_variant_id = #{variantId}
+        AND id = #{id}
+        AND product_variant_id IN (SELECT pv.id
+                                    FROM product_variant pv
+                                    INNER JOIN product p ON pv.product_id = p.id
+                                    WHERE p.tenant_id = #{tenantId}
+        );
+    </update>
+
+    <update id="disableVariantOption" parameterType="java.util.Map">
+        UPDATE product_variant_option
+        SET disabled = true
+        WHERE product_variant_id = #{variantId}
+        AND id = #{id}
+        AND product_variant_id IN (SELECT pv.id
+            FROM product_variant pv
+            INNER JOIN product p ON pv.product_id = p.id
+            WHERE p.tenant_id = #{tenantId}
+        );
+    </update>
 </mapper>

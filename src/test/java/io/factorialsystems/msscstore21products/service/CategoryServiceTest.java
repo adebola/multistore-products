@@ -1,8 +1,8 @@
 package io.factorialsystems.msscstore21products.service;
 
 
-import io.factorialsystems.msscstore21products.dto.CategoryClientDto;
-import io.factorialsystems.msscstore21products.dto.PagedDto;
+import io.factorialsystems.msscstore21products.dto.CategoryDTO;
+import io.factorialsystems.msscstore21products.dto.PagedDTO;
 import lombok.extern.apachecommons.CommonsLog;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,7 +29,7 @@ class CategoryServiceTest {
     @Transactional
     @Rollback
     void clientSave() {
-        CategoryClientDto dto = new CategoryClientDto();
+        CategoryDTO dto = new CategoryDTO();
         dto.setName("Shirts");
         dto.setImageUrl("http://www.nag.co.uk");
         categoryService.clientSave(dto, null);
@@ -44,10 +44,10 @@ class CategoryServiceTest {
         new Random().nextBytes(array);
         String generatedString = new String(array, StandardCharsets.UTF_8);
 
-        Optional<CategoryClientDto> optional = categoryService.findById(id);
+        Optional<CategoryDTO> optional = categoryService.findById(id);
         assertThat(optional.isPresent()).isEqualTo(true);
 
-        CategoryClientDto dto = optional.get();
+        CategoryDTO dto = optional.get();
 
         dto.setName(generatedString);
         categoryService.clientUpdate(id, dto, null);
@@ -57,7 +57,7 @@ class CategoryServiceTest {
 
     @Test
     void findAll() {
-        PagedDto<CategoryClientDto> all = categoryService.findAll(1, 20);
+        PagedDTO<CategoryDTO> all = categoryService.findAll(1, 20);
         assertNotNull(all);
         assert(all.getPageSize() > 0);
         log.info(all.getList());
@@ -65,7 +65,7 @@ class CategoryServiceTest {
 
     @Test
     void search() {
-        PagedDto<CategoryClientDto> s = categoryService.search(1, 20, "s");
+        PagedDTO<CategoryDTO> s = categoryService.search(1, 20, "s");
         assertNotNull(s);
         assert (s.getPageSize() > 0);
         log.info(s.getList());

@@ -2,8 +2,8 @@ package io.factorialsystems.msscstore21products.service;
 
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
-import io.factorialsystems.msscstore21products.dto.CategoryClientDto;
-import io.factorialsystems.msscstore21products.dto.PagedDto;
+import io.factorialsystems.msscstore21products.dto.CategoryDTO;
+import io.factorialsystems.msscstore21products.dto.PagedDTO;
 import io.factorialsystems.msscstore21products.model.Category;
 import io.factorialsystems.msscstore21products.repository.CategoryRepository;
 import io.factorialsystems.msscstore21products.security.JwtTokenWrapper;
@@ -22,19 +22,18 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class CategoryServiceImpl implements CategoryService {
     private final S3Service s3Service;
-    private final JpaAuditService auditService;
+    private final AuditService auditService;
     private final CategoryRepository categoryRepository;
 
     public static final String EDIT_CATEGORY = "Edit-Category";
     public static final String CREATE_CATEGORY = "Create-Category";
-    private static final String CHANGE_CATEGORY_IMAGE = "Change-Category-Image";
 
     @Override
-    public void clientSave(CategoryClientDto categoryClientDto, MultipartFile file) {
+    public void clientSave(CategoryDTO categoryDTO, MultipartFile file) {
         Category c = Category.createCategory(
-                categoryClientDto.getName(),
-                categoryClientDto.getImageUrl(),
-                categoryClientDto.getDescription()
+                categoryDTO.getName(),
+                categoryDTO.getImageUrl(),
+                categoryDTO.getDescription()
         );
 
         try {
@@ -55,7 +54,7 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
-    public void clientUpdate(String id, CategoryClientDto categoryClientDto, MultipartFile file) {
+    public void clientUpdate(String id, CategoryDTO categoryDTO, MultipartFile file) {
 
         try {
             Category existingCategory = categoryRepository.findById(id);
@@ -63,10 +62,10 @@ public class CategoryServiceImpl implements CategoryService {
                 throw new RuntimeException("Category not found");
             }
 
-            existingCategory.setName(categoryClientDto.getName());
-            existingCategory.setImageUrl(categoryClientDto.getImageUrl());
-            existingCategory.setDescription(categoryClientDto.getDescription());
-            existingCategory.setDisabled(categoryClientDto.getDisabled());
+            existingCategory.setName(categoryDTO.getName());
+            existingCategory.setImageUrl(categoryDTO.getImageUrl());
+            existingCategory.setDescription(categoryDTO.getDescription());
+            existingCategory.setDisabled(categoryDTO.getDisabled());
 
             if (file != null && !file.isEmpty()) {
                 final String fileName = s3Service.uploadFile(file);
@@ -85,8 +84,7 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
-    public PagedDto<CategoryClientDto> findAll(Integer pageNumber, Integer pageSize) {
-
+    public PagedDTO<CategoryDTO> findAll(Integer pageNumber, Integer pageSize) {
         log.info("Find All Categories PageNumber : {}, PageSize {}", pageNumber, pageSize);
 
         try (var ignored = PageHelper.startPage(pageNumber, pageSize)) {
@@ -98,20 +96,16 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
-    public Optional<CategoryClientDto> findById(String id) {
+    public Optional<CategoryDTO> findById(String id) {
         log.info("Find Category by Id {}", id);
         final Map<String, String> m =
                 Map.of("id", id, "tenantId", Objects.requireNonNull(JwtTokenWrapper.getTenantId()));
-        Category c = categoryRepository.findByIdAndTenantId(m);
-
-        if (c == null) {
-            return Optional.empty();
-        }
-        return Optional.of(c.createClientDto());
+        Optional<Category> c = categoryRepository.findByIdAndTenantId(m);
+        return c.map(Category::createClientDto);
     }
 
     @Override
-    public PagedDto<CategoryClientDto> search(Integer pageNumber, Integer pageSize, String search) {
+    public PagedDTO<CategoryDTO> search(Integer pageNumber, Integer pageSize, String search) {
         log.info("Search Category PageNumber {}, PageSize {}, search String {}", pageNumber, pageSize, search);
 
         try (var ignored = PageHelper.startPage(pageNumber, pageSize)) {
@@ -124,30 +118,11 @@ public class CategoryServiceImpl implements CategoryService {
         }
     }
 
-    @Override
-    public void changeImage(String id, MultipartFile file) {
-        if (file == null || file.isEmpty()) {
-            throw new IllegalArgumentException("File is empty");
-        }
 
-        Category category = categoryRepository.findById(id);
-        if (category == null || !category.getTenantId().equals(JwtTokenWrapper.getTenantId())) {
-            throw new RuntimeException("Category not found");
-        }
-
-        String fileName = s3Service.uploadFile(file);
-
-        category.setImageUrl(fileName);
-        categoryRepository.update(category);
-
-        final String auditMessage = String.format("Category Image changed for %s by %s", category.getName(), JwtTokenWrapper.getUserName());
-        auditService.audit(CHANGE_CATEGORY_IMAGE, auditMessage);
-    }
-
-    private PagedDto<CategoryClientDto> createClientDto(Page<Category> categories) {
+    private PagedDTO<CategoryDTO> createClientDto(Page<Category> categories) {
         List<Category> result = categories.getResult();
 
-        PagedDto<CategoryClientDto> pagedDto = new PagedDto<>();
+        PagedDTO<CategoryDTO> pagedDto = new PagedDTO<>();
         pagedDto.setTotalSize((int) categories.getTotal());
         pagedDto.setPageNumber(categories.getPageNum());
         pagedDto.setPageSize(categories.getPageSize());

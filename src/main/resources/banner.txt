@@ -3,5 +3,5 @@
 |  '--' ||  .--'| .-. |' .-. ||  ||  || .--''-.  .-'
 |  | --' |  |   ' '-' '\ `-' |'  ''  '\ `--.  |  |
 `--'     `--'    `---'  `---'  `----'  `---'  `--'
-${spring.application.name}:${server.port}
-Powered by Spring Boot ${spring-boot.version}
+
+Developed By Factorial Systems! (https://factorialsystems.io), Powered by Spring Boot ${spring-boot.version}

@@ -13,6 +13,8 @@ import java.time.Duration;
 @Configuration
 @EnableCaching
 public class RedisConfig {
+    public static final String PRODUCT_SKU_CACHE_NAME = "product_sku_cache";
+
     @Bean
     public RedisCacheConfiguration cacheConfiguration() {
         return RedisCacheConfiguration.defaultCacheConfig()
@@ -28,8 +30,8 @@ public class RedisConfig {
     @Bean
     public RedisCacheManagerBuilderCustomizer redisCacheManagerBuilderCustomizer() {
         return (builder) -> builder
-                .withCacheConfiguration("itemCache",
-                        RedisCacheConfiguration.defaultCacheConfig().entryTtl(Duration.ofMinutes(10)))
+                .withCacheConfiguration(PRODUCT_SKU_CACHE_NAME,
+                        RedisCacheConfiguration.defaultCacheConfig().entryTtl(Duration.ofDays(1)))
                 .withCacheConfiguration("customerCache",
                         RedisCacheConfiguration.defaultCacheConfig().entryTtl(Duration.ofMinutes(5)));
     }

@@ -14,7 +14,7 @@
     </resultMap>
 
     <sql id="column_list">
-        id, name, created_on, created_by, image_url, created_on, created_by, disabled, tenant_id,description
+        id, name, created_on, created_by, image_url, disabled, description, tenant_id
     </sql>
 
     <select id="findAllForTenant" resultMap="categoryResultMap" parameterType="java.lang.String">
@@ -35,6 +35,13 @@
         <include refid="column_list"/>
         from category
         where id = #{id} and tenant_id = #{tenantId}
+    </select>
+
+    <select id="findByNameAndTenantId" resultMap="categoryResultMap" parameterType="java.util.Map">
+        select
+        <include refid="column_list"/>
+        from category
+        where name = #{name} and tenant_id = #{tenantId}
     </select>
 
     <insert id="save" parameterType="io.factorialsystems.msscstore21products.model.Category">

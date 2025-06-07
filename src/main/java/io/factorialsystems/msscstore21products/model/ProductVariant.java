@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.util.Date;
+import java.util.List;
 
 @Getter
 @Setter
@@ -16,8 +17,7 @@ public class ProductVariant {
     private String name;
     private Date createdOn;
     private String createdBy;
-    private Boolean suspended;
-    private Boolean deleted;
-    private String deletedBy;
-    private Date deletedOn;
+    private Boolean disabled;
+    private String productId;
+    private List<ProductVariantOption> options;
 }

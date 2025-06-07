@@ -1,7 +1,7 @@
 package io.factorialsystems.msscstore21products.model;
 
 
-import io.factorialsystems.msscstore21products.dto.CategoryClientDto;
+import io.factorialsystems.msscstore21products.dto.CategoryDTO;
 import io.factorialsystems.msscstore21products.security.JwtTokenWrapper;
 import lombok.Getter;
 import lombok.Setter;
@@ -34,17 +34,8 @@ public class Category {
         return c;
     }
 
-    static public Category createCategoryFromDto(CategoryClientDto dto) {
-        Category c = new Category();
-        c.id = dto.getId();
-        c.name = dto.getName();
-        c.imageUrl = dto.getImageUrl();
-
-        return c;
-    }
-
-    public CategoryClientDto createClientDto() {
-        CategoryClientDto dto = new CategoryClientDto();
+    public CategoryDTO createClientDto() {
+        CategoryDTO dto = new CategoryDTO();
         dto.setId(id);
         dto.setName(name);
         dto.setImageUrl(imageUrl);

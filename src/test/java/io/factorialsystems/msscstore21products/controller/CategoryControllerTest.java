@@ -1,8 +1,8 @@
 package io.factorialsystems.msscstore21products.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.factorialsystems.msscstore21products.dto.CategoryClientDto;
-import io.factorialsystems.msscstore21products.dto.PagedDto;
+import io.factorialsystems.msscstore21products.dto.CategoryDTO;
+import io.factorialsystems.msscstore21products.dto.PagedDTO;
 import io.factorialsystems.msscstore21products.service.CategoryService;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
@@ -44,12 +44,12 @@ class CategoryControllerTest {
     @Test
     void createWithoutMultipartFile() throws Exception {
         // Prepare the category DTO
-        CategoryClientDto categoryDto = new CategoryClientDto();
+        CategoryDTO categoryDto = new CategoryDTO();
         categoryDto.setName("Test Category");
         categoryDto.setDescription("Test Description");
 
         // Mock the service call
-        doNothing().when(categoryService).clientSave(any(CategoryClientDto.class), isNull());
+        doNothing().when(categoryService).clientSave(any(CategoryDTO.class), isNull());
 
         // Perform the request
         mockMvc.perform(multipart("/api/v1/category")
@@ -74,12 +74,12 @@ class CategoryControllerTest {
     void updateWithoutMultipartFile() throws Exception {
         // Prepare the category DTO
         final String id = UUID.randomUUID().toString();
-        CategoryClientDto categoryDto = new CategoryClientDto();
+        CategoryDTO categoryDto = new CategoryDTO();
         categoryDto.setName("Test Category");
         categoryDto.setDescription("Test Description");
 
         // Mock the service call
-        doNothing().when(categoryService).clientUpdate(any(String.class), any(CategoryClientDto.class), isNull());
+        doNothing().when(categoryService).clientUpdate(any(String.class), any(CategoryDTO.class), isNull());
 
         // Perform the request
         mockMvc.perform(multipart("/api/v1/category/{id}", id)
@@ -110,12 +110,12 @@ class CategoryControllerTest {
     void updateWithMultipartFile() throws Exception {
         // Prepare the category DTO
         final String id = UUID.randomUUID().toString();
-        CategoryClientDto categoryDto = new CategoryClientDto();
+        CategoryDTO categoryDto = new CategoryDTO();
         categoryDto.setName("Test Category");
         categoryDto.setDescription("Test Description");
 
         // Mock the service call
-        doNothing().when(categoryService).clientUpdate(any(String.class), any(CategoryClientDto.class), any(MockMultipartFile.class));
+        doNothing().when(categoryService).clientUpdate(any(String.class), any(CategoryDTO.class), any(MockMultipartFile.class));
 
         // Perform the request
         mockMvc.perform(multipart("/api/v1/category/{id}", id)
@@ -152,12 +152,12 @@ class CategoryControllerTest {
     @Test
     void createWithMultipartFile() throws Exception {
         // Prepare the category DTO
-        CategoryClientDto categoryDto = new CategoryClientDto();
+        CategoryDTO categoryDto = new CategoryDTO();
         categoryDto.setName("Test Category");
         categoryDto.setDescription("Test Description");
 
         // Mock the service call
-        doNothing().when(categoryService).clientSave(any(CategoryClientDto.class), any(MockMultipartFile.class));
+        doNothing().when(categoryService).clientSave(any(CategoryDTO.class), any(MockMultipartFile.class));
 
         // Perform the request
         mockMvc.perform(multipart("/api/v1/category")
@@ -186,10 +186,10 @@ class CategoryControllerTest {
 
     @Test
     void findAllForTenant() throws Exception {
-        CategoryClientDto clientDto = new CategoryClientDto();
+        CategoryDTO clientDto = new CategoryDTO();
         clientDto.setId(UUID.randomUUID().toString());
 
-        PagedDto<CategoryClientDto> pagedDto = new PagedDto<>();
+        PagedDTO<CategoryDTO> pagedDto = new PagedDTO<>();
         pagedDto.setList(List.of(clientDto));
 
         given(categoryService.findAll(anyInt(), anyInt())).willReturn(pagedDto);

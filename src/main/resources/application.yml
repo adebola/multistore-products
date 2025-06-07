@@ -5,6 +5,8 @@ logging:
   level:
     org.springframework.security: DEBUG
     org.springframework.web: DEBUG
+    org.mybatis: DEBUG
+    io.factorialsystems.msscstore21products.repository.ProductRepository: DEBUG
 
 spring:
   application:

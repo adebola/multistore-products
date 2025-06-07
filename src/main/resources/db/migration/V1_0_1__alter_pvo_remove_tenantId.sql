@@ -1,0 +1,1 @@
+ALTER TABLE product_variant_option drop column tenant_id;
